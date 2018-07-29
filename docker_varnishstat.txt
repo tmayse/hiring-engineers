@@ -1,0 +1,3 @@
+#!/bin/bash
+# Be sure this file is executable and located in /opt/docker_varnishstat
+/usr/bin/docker exec my_varnish_container varnishstat "$@"

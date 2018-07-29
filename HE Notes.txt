@@ -1,0 +1,30 @@
+docker run -d --name dd-agent -v /var/run/docker.sock:/var/run/docker.sock:ro -v /proc/:/host/proc/:ro -v /sys/fs/cgroup/:/host/sys/fs/cgroup:ro -e DD_API_KEY=e1dbdaceaf7516f90ef9e2ad5546072e datadog/agent:latest
+
+docker run -p 8888:8888 jupyter/scipy-notebook:latest
+
+
+python -m flask run --host=0.0.0.0
+ENV var to app path
+
+nginx.conf
+server {
+    listen 80;
+
+    server_name _;
+
+    access_log  /var/log/nginx/access.log;
+    error_log  /var/log/nginx/error.log;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8000/;
+        proxy_redirect     off;
+
+        proxy_set_header   Host                 $host;
+        proxy_set_header   X-Real-IP            $remote_addr;
+        proxy_set_header   X-Forwarded-For      $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto    $scheme;
+    }
+}
+
+
+#ENTRYPOINT ["gunicorn", "--config", "/gunicorn.conf", "--log-config", "/logging.conf", "-b", ":8080", "user_web:app"]

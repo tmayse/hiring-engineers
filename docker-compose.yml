@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:9.4
+    labels:
+      com.datadog.ddhee2.description: "Database of record"
+      com.datadog.ddhee2.type: "data provider"
+    networks:
+      - secured_enclave
+
+  api:
+    image: ./api
+    labels:
+      com.datadog.ddhee2.type: "micro service API"
+      com.datadog.ddhee2.description: "user_web API"
+    networks:
+      - secured_enclave
+      - sheltered_services
+    depends_on:
+      - db
+
+  user_web:
+    image: ./user_web
+    labels:
+      com.datadog.ddhee2.type: "user_web root app"
+      com.datadog.ddhee2.description: "User-facing Web"
+    networks:
+      - dmz
+      - sheltered_services
+    depends_on:
+      - api
+
+  cache:
+    image: datadog/varnish_5_2_1
+    ports:
+      - "8000:80"
+    labels:
+      com.datadog.ddhee2.type: "Primary Database"
+      com.datadog.ddhee2.description: "user_web root app"
+    networks:
+      - dmz
+    depends_on:
+      - api
+
+  dd-agent:
+    image: datadog/agent
+    networks:
+      - dd-agent
+    depends_on:
+      - cache
+
+networks:
+  secured_enclave:
+  sheltered_services:
+  dmz:
+  dd-agent:
