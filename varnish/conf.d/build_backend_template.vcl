@@ -1,4 +1,3 @@
-
 backend $BACKEND_NAME { # Define one backend
     .host = $BACKEND_NAME;    # IP or Hostname of backend
     .port = $BACKEND_PORT;    # Port http server is listening on

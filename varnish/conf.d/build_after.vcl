@@ -1,4 +1,3 @@
-
 sub vcl_recv {
     # Called at the beginning of a request, after the complete request has been received and parsed.
     # Its purpose is to decide whether or not to serve the request, how to do it, and, if applicable,

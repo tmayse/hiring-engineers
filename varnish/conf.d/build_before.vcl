@@ -1,4 +1,3 @@
-
 vcl 4.1;
 # Based on: 
 # https://github.com/mattiasgeniar/varnish-6.0-configuration-templates
@@ -27,4 +26,3 @@ acl purge {
     "127.0.0.1";
     "::1";
 }
-

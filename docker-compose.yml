@@ -1,8 +1,11 @@
+---
 version: "3"
 
 services:
   db:
-    image: postgres:9.4
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     labels:
       com.datadog.ddhee2.description: "Database of record"
       com.datadog.ddhee2.type: "data provider"
@@ -10,7 +13,10 @@ services:
       - secured_enclave
 
   api:
-    image: ./api
+    image: iamtonymayse:api_pip
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DD_API_KEY: ${DD_API_KEY}
     labels:
       com.datadog.ddhee2.type: "micro service API"
       com.datadog.ddhee2.description: "user_web API"
@@ -21,7 +27,7 @@ services:
       - db
 
   user_web:
-    image: ./user_web
+    image: iamtonymayse:eehdd_web
     labels:
       com.datadog.ddhee2.type: "user_web root app"
       com.datadog.ddhee2.description: "User-facing Web"
@@ -32,7 +38,7 @@ services:
       - api
 
   cache:
-    image: datadog/varnish_5_2_1
+    image: iamtonymayse:eehdd_cache
     ports:
       - "8000:80"
     labels:
@@ -45,6 +51,11 @@ services:
 
   dd-agent:
     image: datadog/agent
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_APM_ENABLED: 0
+      DD_PROCESS_AGENT_ENABLED: 0
+      DD_KUBERNETES_NODE_LABELS_AS_TAGS: 0
     networks:
       - dd-agent
     depends_on:

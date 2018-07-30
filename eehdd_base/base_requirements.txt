@@ -2,4 +2,6 @@ Flask==0.10.1
 ddtrace==0.12.1
 blinker==1.4
 datadog
-python-json-logger
+json-logging
+setproctitle
+psycopg2

@@ -1,10 +1,7 @@
-# consider
-# https://github.com/lewispeckover/docker-varnish
-
-FROM alpine:3.8 AS varnish_alpine
+FROM eeacms/varnish:latest
 
 EXPOSE 80
-
-RUN apk update && \
-    apk upgrade && \
-    apk add varnish
+COPY conf.d /conf.d
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+ENTRYPOINT /start.sh

@@ -1,15 +1,16 @@
 ### user_web
-import os, datetime, logging, sys
-from pythonjsonlogger import jsonlogger
+import os, datetime, logging, sys, json_logging
 
 from flask import Flask, send_file
-app = Flask(__name__)
 
-logger = logging.getLogger()
-logHandler = logging.StreamHandler()
-formatter = jsonlogger.JsonFormatter()
-logHandler.setFormatter(formatter)
-logger.addHandler(logHandler)
+app = Flask(__name__)
+json_logging.ENABLE_JSON_LOGGING = True
+json_logging.init(framework_name='flask')
+json_logging.init_request_instrument(app)
+
+logger = logging.getLogger("flask-logger")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 options = {'api_key': os.environ['DD_API_KEY'],
             'app_key': os.environ['DD_APP_KEY']}

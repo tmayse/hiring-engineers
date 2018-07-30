@@ -5,6 +5,7 @@ import time
 import json
 import pprint
 import psycopg2
+import json_logging
 
 from datadog import initialize, api
 from flask import Flask, send_file, redirect
@@ -21,6 +22,13 @@ options = {'api_key': os.environ['DD_API_KEY'],
 initialize(**options)
 
 app = Flask(__name__)
+json_logging.ENABLE_JSON_LOGGING = True
+json_logging.init(framework_name='flask')
+json_logging.init_request_instrument(app)
+
+logger = logging.getLogger("flask-logger")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 tracer.configure(hostname="good_vs_evil")
 traced_app = TraceMiddleware(app, tracer, service="api", distributed_tracing=True)
