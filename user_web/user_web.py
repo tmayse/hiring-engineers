@@ -1,7 +1,9 @@
 ### user_web
 import os, datetime, logging, sys, json_logging
-
-from flask import Flask, send_file
+from datadog import initialize, api
+from flask import Flask, send_file, redirect
+from ddtrace import tracer, patch
+from ddtrace.contrib.flask import TraceMiddleware
 
 app = Flask(__name__)
 json_logging.ENABLE_JSON_LOGGING = True
@@ -12,8 +14,7 @@ logger = logging.getLogger("flask-logger")
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
-options = {'api_key': os.environ['DD_API_KEY'],
-            'app_key': os.environ['DD_APP_KEY']}
+options = {'api_key': os.environ['DD_API_KEY']}
 
 tracer.configure(hostname="dub_dub_dub")
 traced_app = TraceMiddleware(app, tracer, service="user_web", distributed_tracing=True)

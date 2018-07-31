@@ -1,0 +1,4 @@
+VARNISH_DOCKER_FILTER="name=web"
+export VARNISH_DOCKER_FILTER
+docker-compose up --remove-orphans
+

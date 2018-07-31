@@ -5,6 +5,14 @@ sub vcl_recv {
     # also used to modify the request
     set req.backend_hint = vdir.backend(); # send all traffic to the vdir director
 
+    C{
+        struct timeval detail_time;
+        gettimeofday(&detail_time, NULL);
+        char start[20];
+        sprintf(start, "t=%lu%06lu", detail_time.tv_sec, detail_time.tv_usec);
+        VRT_SetHdr(ctx, &VGC_HDR_REQ_reqstart, start, vrt_magic_string_end);
+    }C
+
     # Normalize the header, remove the port (in case you're testing this on various TCP ports)
     set req.http.Host = regsub(req.http.Host, ":[0-9]+", "");
 
@@ -242,11 +250,6 @@ sub vcl_miss {
     #
 
     # create Datadog tracing context for instrumented applications
-    set var.NOW_NANOSEC TIME = now.msec * 1000000000
-    set req.http.HTTP_HEADER_START = var.NOW_NANOSEC TIME
-    set req.http.HTTP_HEADER_VARNISH_START = var.NOW_NANOSEC TIME
-    set req.http.HTTP_HEADER_TRACE_ID = std.real2integer(std.random(0,9223372036854775807), 0);
-    set req.http.HTTP_HEADER_PARENT_ID = 0;
 
     # trace full stack = force trace - use this for high value
     # transactions such as /checkout /register /signup
@@ -262,7 +265,8 @@ sub vcl_miss {
 sub vcl_backend_response {
     # Called after the response headers has been successfully retrieved from the backend.
 
-    # Pause ESI request and remove Surrogate-Control header
+
+    #Pause ESI request and remove Surrogate-Control header
     if (beresp.http.Surrogate-Control ~ "ESI/1.0") {
         unset beresp.http.Surrogate-Control;
         set beresp.do_esi = true;
@@ -304,13 +308,12 @@ sub vcl_backend_response {
     }
 
     # if the transaction comes back marked with priority 1 or 2
-    # calculate the varnish span time & submit span to API
-    if (req.http.HTTP_HEADER_SAMPLING_PRIORITY >= 1) {
-        set var.NOW_NANOSEC = now.msec * 1000000000;
-        set var.VARNISH_TRACE_DURATION = var.NOW_NANOSEC - req.http.HTTP_HEADER_START;
+    #calculate the varnish span time & submit span to API
+    if (std.integer(bereq.http.HTTP_HEADER_SAMPLING_PRIORITY, 0) > 1) {
+        #send trace
     }
     # should remove these headers, but leaving them for additional info in testing
-    unset beresp.http.HTTP
+    unset beresp.http.HTTP;
 
     # Don't cache 50x responses
     if (beresp.status == 500 ||

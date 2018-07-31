@@ -1,0 +1,3 @@
+sudo docker build --rm --no-cache -t iamtonymayse:eehdd_cache .
+-
+

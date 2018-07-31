@@ -1,24 +1,17 @@
-vcl 4.1;
+vcl 4.0;
+
 # Based on: 
 # https://github.com/mattiasgeniar/varnish-6.0-configuration-templates
 
 import std;
 import directors;
 
-declare local var.HTTP_HEADER_TRACE_ID STRING;
-declare local var.HTTP_HEADER_PARENT_ID STRING;
-declare local var.HTTP_HEADER_SAMPLING_PRIORITY STRING;
-declare local var.HTTP_HEADER_VARNISH_START STRING;
-declare local var.NOW_NANOSEC TIME;
-declare local var.VARNISH_TRACE_DURATION RTIME;
-
-var.HTTP_HEADER_TRACE_ID = 'x-datadog-trace-id';
-var.HTTP_HEADER_PARENT_ID = 'x-datadog-parent-id';
-var.HTTP_HEADER_SAMPLING_PRIORITY = 'x-datadog-sampling-priority'; # 1 or 2 = keep
-var.HTTP_HEADER_VARNISH_START = 'x-datadog-varnish-start';
-
-# String concatenation on RHS
-set var.restarted = "Request " if(req.restarts > 0, "has", "has not") " restarted.";
+# To allow inline-C in VCL start varnishd with -p vcc_allow_inline_c=on
+C{
+    #include <sys/time.h>
+    #include <stdio.h>
+    static const struct gethdr_s VGC_HDR_REQ_reqstart = { HDR_REQ, "\020X-Request-Start:" };
+}C
 
 acl purge {
     # ACL controlling purge access
@@ -26,3 +19,4 @@ acl purge {
     "127.0.0.1";
     "::1";
 }
+

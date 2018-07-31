@@ -3,3 +3,4 @@ ddtrace==0.12.1
 blinker==1.4
 datadog
 json-logging
+gunicorn

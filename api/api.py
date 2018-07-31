@@ -1,10 +1,11 @@
-import os
+import os, sys
 import traceback
 import random
 import time
 import json
 import pprint
 import psycopg2
+import logging
 import json_logging
 
 from datadog import initialize, api
@@ -17,8 +18,8 @@ POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
 patch(requests=True)
 import requests
 
-options = {'api_key': os.environ['DD_API_KEY'],
-            'app_key': os.environ['DD_APP_KEY']}
+options = {'api_key': os.environ['DD_API_KEY']}
+
 initialize(**options)
 
 app = Flask(__name__)
@@ -26,7 +27,7 @@ json_logging.ENABLE_JSON_LOGGING = True
 json_logging.init(framework_name='flask')
 json_logging.init_request_instrument(app)
 
-logger = logging.getLogger("flask-logger")
+logger = logging.getLogger("ddtrace.writer")
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 

@@ -1,11 +1,11 @@
 ---
-version: "3"
+version: "3.2"
 
 services:
   db:
     image: postgres
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - ./.env
     labels:
       com.datadog.ddhee2.description: "Database of record"
       com.datadog.ddhee2.type: "data provider"
@@ -13,10 +13,9 @@ services:
       - secured_enclave
 
   api:
-    image: iamtonymayse:api_pip
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      DD_API_KEY: ${DD_API_KEY}
+    image: iamtonymayse:eehdd_api
+    env_file:
+      - ./.env
     labels:
       com.datadog.ddhee2.type: "micro service API"
       com.datadog.ddhee2.description: "user_web API"
@@ -28,6 +27,8 @@ services:
 
   user_web:
     image: iamtonymayse:eehdd_web
+    env_file:
+      - ./.env
     labels:
       com.datadog.ddhee2.type: "user_web root app"
       com.datadog.ddhee2.description: "User-facing Web"
@@ -39,6 +40,8 @@ services:
 
   cache:
     image: iamtonymayse:eehdd_cache
+    environment:
+      - VARNISH_DOCKER_FILTER
     ports:
       - "8000:80"
     labels:
@@ -46,13 +49,20 @@ services:
       com.datadog.ddhee2.description: "user_web root app"
     networks:
       - dmz
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - api
 
   dd-agent:
     image: datadog/agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup/:ro
+    env_file:
+      - ./.env
     environment:
-      DD_API_KEY: ${DD_API_KEY}
       DD_APM_ENABLED: 0
       DD_PROCESS_AGENT_ENABLED: 0
       DD_KUBERNETES_NODE_LABELS_AS_TAGS: 0
